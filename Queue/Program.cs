@@ -9,10 +9,11 @@ namespace Queue
     {
         public static void Main(string[] args) 
         {
-           // BuildAndRunQueue();
-           // BuildAndRunCircularQueue();
+            // BuildAndRunQueue();
+            // BuildAndRunCircularQueue();
 
-            BuildAndRunBFS();
+            // BuildAndRunBFS();
+            BuildAndRunNumberIslands();
         }
 
         /// <summary>
@@ -88,6 +89,47 @@ namespace Queue
             Console.WriteLine(BFS(root, n6));
         }
 
+        public static void BuildAndRunNumberIslands() 
+        {
+            char[][] grid = new char[4][]
+               {
+                new char[] {'1','1' ,'1','1','0'},
+                new char[] {'1','1','0','1' ,'0'},
+                new char[]  {'1','1','0','0','0' },
+                new char[] {'0','0','0','0','0' }
+               };
+
+            char[][] grid2 = new char[4][]
+               {
+                new char[] {'1','1' ,'0','0','0'},
+                new char[] {'1','1','0','0' ,'0'},
+                new char[]  {'0','0','1','0','0' },
+                new char[] {'0','0','0','1','1' }
+               };
+
+            //["1","1","0","0","0"],
+            //["1","1","0","0","0"],
+            //["0","0","1","0","0"],
+            //["0","0","0","1","1"]
+
+
+            /**
+             * 
+             * 0,0 0,1 0,2 0,3 0,4
+             * 1,0 1,1 1,2 1,3 1,4
+             * 2,0 2,1 2,2 2,3 2,4
+             * 3,0 3,1 3,2 3,3 3,4
+             * 
+             * 上 x - 1 >= 0
+             * 下 x + 1 < row
+             * 左 y -1 >= 0
+             * 右 y + 1 < col
+             */
+
+            int islandCount = NumberIslands(grid2);
+
+            Console.WriteLine("岛屿数量:"+islandCount);
+        }
         /// <summary>
         /// 广度优先搜索
         /// </summary>
@@ -134,7 +176,104 @@ namespace Queue
             return -1;
         }
 
-        
+        private static int NumberIslands(char[][] grid) 
+        {
+            int row = grid.Length;
+            int col = grid[0].Length;
+
+            if (row <= 0 || col <= 0) 
+            {
+                return 0;
+            }
+
+            // 本地函数 用于搜索附近陆地
+            void BFS(char[][] grid,Tuple<char,char> point,HashSet<Tuple<char, char>> visited, int row,int col) 
+            {
+                Queue<Tuple<char, char>> queue = new Queue<Tuple<char, char>>();
+                queue.Enqueue(point);
+
+                while (queue.Count > 0)
+                {
+                    int curSize = queue.Count();
+                    for (int i = 0; i < curSize; i++)
+                    {
+                        Tuple<char, char> curPoint = queue.Peek();
+                        int curX = (int)curPoint.Item1;
+                        int curY = (int)curPoint.Item2;
+
+                        // 如果周围（水平，垂直）节点中有陆地 将其加入队列 继续搜索
+
+                        // 上
+                        if (curX - 1 >= 0) 
+                        {
+                            var offsetPoint = new Tuple<char, char>((char)(curX - 1), (char)curY);
+                            if (grid[curX-1][curY] == '1' && !visited.Contains(offsetPoint)) 
+                            {
+                                queue.Enqueue(offsetPoint);
+                                visited.Add(offsetPoint);
+                            }
+                        }
+                        // 下
+                        if (curX + 1 < row)
+                        {
+                            var offsetPoint = new Tuple<char, char>((char)(curX + 1), (char)curY);
+                            if (grid[curX + 1][curY] == '1' && !visited.Contains(offsetPoint))
+                            {
+                                queue.Enqueue(offsetPoint);
+                                visited.Add(offsetPoint);
+                            }
+                        }
+                        // 左
+                        if (curY - 1 >= 0) 
+                        {
+                            var offsetPoint = new Tuple<char, char>((char)curX , (char)(curY-1));
+                            if (grid[curX][curY-1] == '1' && !visited.Contains(offsetPoint))
+                            {
+                                queue.Enqueue(offsetPoint);
+                                visited.Add(offsetPoint);
+                            }
+                        }
+                        // 右
+                        if (curY + 1 < col)
+                        {
+                            var offsetPoint = new Tuple<char, char>((char)curX, (char)(curY + 1));
+                            if (grid[curX][curY + 1] == '1' && !visited.Contains(offsetPoint))
+                            {
+                                queue.Enqueue(offsetPoint);
+                                visited.Add(offsetPoint);
+                            }
+                        }
+
+                    }
+                    queue.Dequeue();
+                }
+            }
+
+            // 存储已访问过的节点
+            HashSet<Tuple<char, char>> visited = new HashSet<Tuple<char, char>>();
+
+            // 岛屿数量
+            int count = 0;
+
+            // 遍历所有节点
+            for (int i = 0; i < row; i++)
+            {
+                for (int j = 0; j < col; j++)
+                {
+                    Tuple<char, char> point = new Tuple<char, char>((char)i, (char)j);
+                    // 如果当前节点为陆地且未访问过
+                    if (grid[i][j] == '1' && !visited.Contains(point)) 
+                    {
+                        count++;
+                        visited.Add(point);
+                        // 广度优先算法 查找附近 陆地
+                        BFS(grid, point, visited, row, col);
+                    }
+                }
+            }
+
+            return count;
+        }
     }
 
     public class BFSNode 
